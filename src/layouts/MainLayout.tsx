@@ -11,6 +11,7 @@ export function MainLayout() {
           <Link to="/">Gallery</Link>
           <Link to="/tags">Tags</Link>
           <Link to="/admin">Admin</Link>
+          <Link to="/admin/upload">Upload</Link>
         </nav>
       </header>
       <Outlet />

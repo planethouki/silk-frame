@@ -13,6 +13,7 @@ import { firebaseApp, hasFirebaseConfig } from './lib/firebase'
 import { buildTags, loadPublicImages } from './lib/gallery'
 import { AdminImagePage } from './pages/AdminImagePage'
 import { AdminPage } from './pages/AdminPage'
+import { AdminUploadPage } from './pages/AdminUploadPage'
 import { GalleryPage } from './pages/GalleryPage'
 import { ImageDetailPage } from './pages/ImageDetailPage'
 import { PlaceholderPage } from './pages/PlaceholderPage'
@@ -106,7 +107,7 @@ function App() {
         />
         <Route
           path="/admin/upload"
-          element={<PlaceholderPage title="Upload" user={user} />}
+          element={<AdminUploadPage user={user} />}
         />
         <Route
           path="/admin/images/:imageId"

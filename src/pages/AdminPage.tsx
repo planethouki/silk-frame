@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router'
 import type { AdminSession } from '../types'
 
 export function AdminPage({
@@ -43,9 +44,12 @@ export function AdminPage({
                 <strong>{user.displayName ?? user.email}</strong>
                 <span>Signed in</span>
               </div>
-              <button type="button" onClick={signOutAdmin}>
-                Sign out
-              </button>
+              <div className="admin-actions">
+                <Link to="/admin/upload">Upload image</Link>
+                <button type="button" onClick={signOutAdmin}>
+                  Sign out
+                </button>
+              </div>
             </>
           ) : (
             <form className="admin-login-form" onSubmit={handleSubmit}>
