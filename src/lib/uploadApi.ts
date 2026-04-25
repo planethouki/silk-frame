@@ -18,6 +18,7 @@ type CreateImageUploadInput = {
   visibility: 'public' | 'private'
   originalContentType: string
   originalExtension: string
+  originalFileName: string
   width: number
   height: number
   takenAt: string
@@ -99,6 +100,7 @@ export async function uploadImage({
     visibility,
     originalContentType: prepared.original.type || 'application/octet-stream',
     originalExtension: extensionFromFile(prepared.original),
+    originalFileName: prepared.original.name,
     width: prepared.width,
     height: prepared.height,
     takenAt,

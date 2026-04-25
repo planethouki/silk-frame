@@ -1,5 +1,6 @@
+import {randomBytes} from "crypto";
 import {FieldValue} from "firebase-admin/firestore";
-import {onCall} from "firebase-functions/v2/https";
+import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {assertAdmin} from "./shared/auth";
 import {publicUrl} from "./shared/cloudfront";
 import {db} from "./shared/firebase";
@@ -20,11 +21,74 @@ type CreateImageUploadData = {
   visibility?: unknown;
   originalContentType?: unknown;
   originalExtension?: unknown;
+  originalFileName?: unknown;
   width?: unknown;
   height?: unknown;
   takenAt?: unknown;
   sortAt?: unknown;
 };
+
+const imageIdTimeFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+function imageIdTimestamp(date: Date) {
+  const parts = new Map(
+    imageIdTimeFormatter
+      .formatToParts(date)
+      .map((part) => [part.type, part.value]),
+  );
+
+  return [
+    parts.get("year"),
+    parts.get("month"),
+    parts.get("day"),
+    "-",
+    parts.get("hour"),
+    parts.get("minute"),
+  ].join("");
+}
+
+function slugFromFileName(fileName: string) {
+  const name = fileName.split(/[\\/]/).pop() || "";
+  const baseName = name.replace(/\.[^.]*$/, "");
+  const slug = baseName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 32)
+    .replace(/-+$/g, "");
+
+  return slug || "img";
+}
+
+function imageIdCandidate(fileName: string) {
+  return [
+    imageIdTimestamp(new Date()),
+    slugFromFileName(fileName),
+    randomBytes(2).toString("hex"),
+  ].join("-");
+}
+
+function keysForImageId(imageId: string, originalExtension: string) {
+  const originalKey = `private/originals/${imageId}.${originalExtension}`;
+  const displayKey = `public/display/${imageId}.webp`;
+  const thumbKey = `public/thumbs/${imageId}.webp`;
+
+  return {
+    originalKey,
+    displayKey,
+    thumbKey,
+    displayUrl: publicUrl(displayKey),
+    thumbUrl: publicUrl(thumbKey),
+  };
+}
 
 export const createImageUpload = onCall(
   {
@@ -46,58 +110,74 @@ export const createImageUpload = onCall(
     const originalExtension = sanitizeExtension(
       requiredString(data.originalExtension, "originalExtension"),
     );
+    const originalFileName = optionalString(data.originalFileName);
     const width = optionalNumber(data.width, 0);
     const height = optionalNumber(data.height, 0);
     const now = FieldValue.serverTimestamp();
     const sortAt = optionalDate(data.sortAt) || now;
     const takenAt = optionalDate(data.takenAt);
 
-    const imageRef = db.collection("images").doc();
-    const imageId = imageRef.id;
-    const originalKey = `private/originals/${imageId}.${originalExtension}`;
-    const displayKey = `public/display/${imageId}.webp`;
-    const thumbKey = `public/thumbs/${imageId}.webp`;
-    const displayUrl = publicUrl(displayKey);
-    const thumbUrl = publicUrl(thumbKey);
-
-    await imageRef.set({
+    const imageData = {
       title,
       description,
       tags,
       visibility,
       status: "uploading",
-      originalKey,
-      displayKey,
-      thumbKey,
-      displayUrl,
-      thumbUrl,
       width,
       height,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
       takenAt: takenAt || sortAt,
       sortAt,
-    });
+    };
+
+    let imageId = "";
+    let keys = keysForImageId("pending", originalExtension);
+    let created = false;
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      imageId = imageIdCandidate(originalFileName);
+      keys = keysForImageId(imageId, originalExtension);
+      const imageRef = db.collection("images").doc(imageId);
+
+      try {
+        await imageRef.create({
+          ...imageData,
+          ...keys,
+        });
+        created = true;
+        break;
+      } catch (caughtError) {
+        const code = (caughtError as {code?: number | string}).code;
+        if (code !== 6 && code !== "already-exists") {
+          throw caughtError;
+        }
+      }
+    }
+
+    if (!created) {
+      throw new HttpsError("already-exists", "Could not allocate imageId.");
+    }
 
     return {
       imageId,
       keys: {
-        originalKey,
-        displayKey,
-        thumbKey,
+        originalKey: keys.originalKey,
+        displayKey: keys.displayKey,
+        thumbKey: keys.thumbKey,
       },
       publicUrls: {
-        displayUrl,
-        thumbUrl,
+        displayUrl: keys.displayUrl,
+        thumbUrl: keys.thumbUrl,
       },
       uploadUrls: {
         original: await signedPutUrl(
-          originalKey,
+          keys.originalKey,
           originalContentType,
           "original",
         ),
-        display: await signedPutUrl(displayKey, "image/webp", "display"),
-        thumb: await signedPutUrl(thumbKey, "image/webp", "thumb"),
+        display: await signedPutUrl(keys.displayKey, "image/webp", "display"),
+        thumb: await signedPutUrl(keys.thumbKey, "image/webp", "thumb"),
       },
     };
   },
