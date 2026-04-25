@@ -1,5 +1,6 @@
 import {randomBytes} from "crypto";
-import {FieldValue} from "firebase-admin/firestore";
+import {FieldValue, Timestamp} from "firebase-admin/firestore";
+import {logger} from "firebase-functions";
 import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {assertAdmin} from "./shared/auth";
 import {publicUrl} from "./shared/cloudfront";
@@ -27,6 +28,9 @@ type CreateImageUploadData = {
   takenAt?: unknown;
   sortAt?: unknown;
 };
+
+const staleUploadingMaxAgeMs = 24 * 60 * 60 * 1000;
+const staleUploadingCleanupLimit = 25;
 
 const imageIdTimeFormatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Tokyo",
@@ -90,6 +94,27 @@ function keysForImageId(imageId: string, originalExtension: string) {
   };
 }
 
+async function cleanupStaleUploadingImages() {
+  const cutoff = Timestamp.fromMillis(Date.now() - staleUploadingMaxAgeMs);
+  const snapshot = await db
+    .collection("images")
+    .where("status", "==", "uploading")
+    .where("createdAt", "<", cutoff)
+    .orderBy("createdAt", "asc")
+    .limit(staleUploadingCleanupLimit)
+    .get();
+
+  if (snapshot.empty) return;
+
+  const batch = db.batch();
+  snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+  await batch.commit();
+
+  logger.info("Cleaned up stale uploading image documents.", {
+    count: snapshot.size,
+  });
+}
+
 export const createImageUpload = onCall(
   {
     region: "asia-northeast1",
@@ -97,6 +122,14 @@ export const createImageUpload = onCall(
   },
   async (request) => {
     await assertAdmin(request.auth?.uid);
+
+    try {
+      await cleanupStaleUploadingImages();
+    } catch (caughtError) {
+      logger.warn("Failed to clean up stale uploading image documents.", {
+        error: caughtError,
+      });
+    }
 
     const data = request.data as CreateImageUploadData;
     const title = requiredString(data.title, "title");
