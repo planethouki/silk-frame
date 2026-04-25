@@ -5,3 +5,4 @@ setGlobalOptions({maxInstances: 10});
 
 export {createImageUpload} from "./createImageUpload";
 export {completeImageUpload} from "./completeImageUpload";
+export {getHighResolutionImage} from "./getHighResolutionImage";

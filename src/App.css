@@ -214,6 +214,43 @@ h1 {
   padding: 14px;
 }
 
+.high-res-panel {
+  align-items: center;
+  background: #eef6f2;
+  border: 1px solid #bfdacf;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 14px;
+}
+
+.high-res-panel a {
+  color: var(--ink);
+}
+
+.high-res-panel small {
+  color: var(--muted);
+}
+
+.high-res-panel p {
+  color: #a13d2d;
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.high-res-preview {
+  margin-top: 28px;
+}
+
+.high-res-preview img {
+  background: var(--soft);
+  max-height: 88svh;
+  object-fit: contain;
+  width: 100%;
+}
+
 .tags-page {
   max-width: 900px;
 }

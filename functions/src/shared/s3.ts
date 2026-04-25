@@ -1,4 +1,8 @@
-import {PutObjectCommand, S3Client} from "@aws-sdk/client-s3";
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import {getSignedUrl} from "@aws-sdk/s3-request-presigner";
 import {defineSecret} from "firebase-functions/params";
 import {HttpsError} from "firebase-functions/v2/https";
@@ -46,4 +50,31 @@ export async function signedPutUrl(
   });
 
   return getSignedUrl(s3Client, command, {expiresIn: 10 * 60});
+}
+
+export async function signedGetUrl(key: string) {
+  ensureS3Config();
+
+  const s3Client = new S3Client({
+    region: awsRegion.value(),
+    requestChecksumCalculation: "WHEN_REQUIRED",
+    credentials: {
+      accessKeyId: awsAccessKeyId.value(),
+      secretAccessKey: awsSecretAccessKey.value(),
+    },
+  });
+
+  const command = new GetObjectCommand({
+    Bucket: s3Bucket.value(),
+    Key: key,
+    ResponseCacheControl: "private, max-age=0, no-store",
+    ResponseContentDisposition: "inline",
+  });
+
+  const expiresIn = 5 * 60;
+
+  return {
+    url: await getSignedUrl(s3Client, command, {expiresIn}),
+    expiresIn,
+  };
 }
