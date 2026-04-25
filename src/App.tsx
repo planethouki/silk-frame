@@ -8,7 +8,12 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import './App.css'
+import { AgeGate } from './components/AgeGate'
 import { MainLayout } from './layouts/MainLayout'
+import {
+  hasAgeVerificationCookie,
+  saveAgeVerificationCookie,
+} from './lib/ageVerification'
 import { firebaseApp, hasFirebaseConfig } from './lib/firebase'
 import { buildTags, loadPublicImages } from './lib/gallery'
 import { AdminImagePage } from './pages/AdminImagePage'
@@ -27,8 +32,11 @@ function App() {
     hasFirebaseConfig ? 'loading' : 'offline',
   )
   const [user, setUser] = useState<User | null>(null)
+  const [isAgeVerified, setIsAgeVerified] = useState(hasAgeVerificationCookie)
 
   useEffect(() => {
+    if (!isAgeVerified) return undefined
+
     let mounted = true
 
     loadPublicImages()
@@ -46,12 +54,13 @@ function App() {
     return () => {
       mounted = false
     }
-  }, [])
+  }, [isAgeVerified])
 
   useEffect(() => {
+    if (!isAgeVerified) return undefined
     if (!firebaseApp) return undefined
     return onAuthStateChanged(getAuth(firebaseApp), setUser)
-  }, [])
+  }, [isAgeVerified])
 
   const sortedImages = useMemo(
     () => [...images].sort((a, b) => b.sortAt.getTime() - a.sortAt.getTime()),
@@ -68,6 +77,15 @@ function App() {
   const signOutAdmin = async () => {
     if (!firebaseApp) return
     await signOut(getAuth(firebaseApp))
+  }
+
+  const confirmAge = () => {
+    saveAgeVerificationCookie()
+    setIsAgeVerified(true)
+  }
+
+  if (!isAgeVerified) {
+    return <AgeGate onConfirm={confirmAge} />
   }
 
   return (

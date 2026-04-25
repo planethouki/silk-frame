@@ -456,6 +456,34 @@ h1 {
   opacity: 0.62;
 }
 
+.age-gate {
+  align-items: center;
+  display: grid;
+  min-height: 100svh;
+  padding: 24px;
+}
+
+.age-gate-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 18px;
+  justify-self: center;
+  max-width: 560px;
+  padding: 32px;
+  width: min(100%, 560px);
+}
+
+.age-gate-panel h1 {
+  font-size: clamp(42px, 10vw, 76px);
+}
+
+.age-gate-panel p {
+  color: var(--text);
+  margin: 0;
+}
+
 @media (max-width: 760px) {
   .top-bar {
     align-items: flex-start;
