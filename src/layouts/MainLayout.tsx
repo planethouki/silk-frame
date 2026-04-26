@@ -7,7 +7,7 @@ export function MainLayout({ user }: { user: User | null }) {
     <div className="app-shell">
       <header className="top-bar">
         <Link className="brand-button" to="/">
-          silk-frame
+          Silk Frame
         </Link>
         <nav className="main-nav" aria-label="Primary navigation">
           <Link to="/">Gallery</Link>
