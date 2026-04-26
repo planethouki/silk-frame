@@ -6,6 +6,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { RatingControl } from '../components/RatingControl'
+import { TouchImageViewer } from '../components/TouchImageViewer'
 import { slugify } from '../lib/gallery'
 import { getHighResolutionImageUrl } from '../lib/highResolutionApi'
 import { updateImageRating } from '../lib/ratingsApi'
@@ -24,7 +25,8 @@ export function ImageDetailPage({
 }) {
   const navigate = useNavigate()
   const { imageId } = useParams()
-  const image = images.find((item) => item.id === imageId)
+  const currentIndex = images.findIndex((item) => item.id === imageId)
+  const image = currentIndex >= 0 ? images[currentIndex] : undefined
   const [highResRequest, setHighResRequest] = useState<{
     imageId: string
     status: 'loading' | 'ready' | 'error'
@@ -39,6 +41,20 @@ export function ImageDetailPage({
 
   if (!image) {
     return <PlaceholderPage title="Image not found" user={user} />
+  }
+
+  const previousImage = currentIndex > 0 ? images[currentIndex - 1] : null
+  const nextImage =
+    currentIndex < images.length - 1 ? images[currentIndex + 1] : null
+
+  const goToPreviousImage = () => {
+    if (!previousImage) return
+    navigate(`/images/${previousImage.id}`)
+  }
+
+  const goToNextImage = () => {
+    if (!nextImage) return
+    navigate(`/images/${nextImage.id}`)
   }
 
   const currentHighRes =
@@ -91,7 +107,15 @@ export function ImageDetailPage({
         Back
       </button>
       <article>
-        <img className="detail-image" src={image.displayUrl} alt={image.title} />
+        <TouchImageViewer
+          alt={image.title}
+          canGoNext={Boolean(nextImage)}
+          canGoPrevious={Boolean(previousImage)}
+          key={image.id}
+          onNext={goToNextImage}
+          onPrevious={goToPreviousImage}
+          src={image.displayUrl}
+        />
         <div className="detail-copy">
           <button
             aria-expanded={isInfoOpen}
