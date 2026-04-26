@@ -175,19 +175,20 @@ export function ImageDetailPage({
           src={image.displayUrl}
         />
         <div className="detail-copy">
-          <div className="detail-tool-row">
-            <button
-              aria-expanded={isInfoOpen}
-              aria-label={
-                isInfoOpen ? 'Hide image information' : 'Show image information'
-              }
-              className="icon-action"
-              onClick={() => setIsInfoOpen((current) => !current)}
-              type="button"
-            >
-              {isInfoOpen ? <XMarkIcon /> : <InformationCircleIcon />}
-            </button>
-            {user ? (
+          {user ? (
+            <>
+              <div className="detail-tool-row">
+                <button
+                  aria-expanded={isInfoOpen}
+                  aria-label={
+                    isInfoOpen ? 'Hide image information' : 'Show image information'
+                  }
+                  className="icon-action"
+                  onClick={() => setIsInfoOpen((current) => !current)}
+                  type="button"
+                >
+                  {isInfoOpen ? <XMarkIcon /> : <InformationCircleIcon />}
+                </button>
               <button
                 aria-expanded={isEditingMetadata}
                 aria-label={
@@ -211,25 +212,26 @@ export function ImageDetailPage({
               >
                 {isEditingMetadata ? <XMarkIcon /> : <PencilSquareIcon />}
               </button>
-            ) : null}
-          </div>
-          {isInfoOpen ? (
-            <div className="detail-info-panel">
-              <dl>
-                <div>
-                  <dt>Title</dt>
-                  <dd>{image.title}</dd>
+              </div>
+              {isInfoOpen ? (
+                <div className="detail-info-panel">
+                  <dl>
+                    <div>
+                      <dt>Title</dt>
+                      <dd>{image.title}</dd>
+                    </div>
+                    <div>
+                      <dt>Description</dt>
+                      <dd>{image.description || '-'}</dd>
+                    </div>
+                    <div>
+                      <dt>Date</dt>
+                      <dd>{image.sortAt.toLocaleDateString()}</dd>
+                    </div>
+                  </dl>
                 </div>
-                <div>
-                  <dt>Description</dt>
-                  <dd>{image.description || '-'}</dd>
-                </div>
-                <div>
-                  <dt>Date</dt>
-                  <dd>{image.sortAt.toLocaleDateString()}</dd>
-                </div>
-              </dl>
-            </div>
+              ) : null}
+            </>
           ) : null}
           {user && isEditingMetadata ? (
             <form className="metadata-editor" onSubmit={saveMetadata}>
