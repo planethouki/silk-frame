@@ -8,6 +8,8 @@ export type PreparedImageUpload = {
 
 const DISPLAY_MAX_SIZE = 1800
 const THUMB_MAX_SIZE = 640
+const DISPLAY_WEBP_QUALITY = 0.72
+const THUMB_WEBP_QUALITY = 0.64
 
 function readImage(file: File) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -66,8 +68,8 @@ function renderWebp(image: HTMLImageElement, maxSize: number, quality: number) {
 export async function prepareImageUpload(file: File): Promise<PreparedImageUpload> {
   const image = await readImage(file)
   const [display, thumb] = await Promise.all([
-    renderWebp(image, DISPLAY_MAX_SIZE, 0.86),
-    renderWebp(image, THUMB_MAX_SIZE, 0.78),
+    renderWebp(image, DISPLAY_MAX_SIZE, DISPLAY_WEBP_QUALITY),
+    renderWebp(image, THUMB_MAX_SIZE, THUMB_WEBP_QUALITY),
   ])
 
   return {
