@@ -3,10 +3,12 @@ import { useState, type FormEvent } from 'react'
 import {
   InformationCircleIcon,
   PencilSquareIcon,
+  TrashIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { RatingControl } from '../components/RatingControl'
 import { TouchImageViewer } from '../components/TouchImageViewer'
+import { deleteImage } from '../lib/deleteImageApi'
 import { slugify } from '../lib/gallery'
 import { getHighResolutionImageUrl } from '../lib/highResolutionApi'
 import { updateImageMetadata } from '../lib/metadataApi'
@@ -19,10 +21,12 @@ export function ImageDetailPage({
   images,
   user,
   onImageChange,
+  onImageDelete,
 }: {
   images: GalleryImage[]
   user: User | null
   onImageChange: (image: GalleryImage) => void
+  onImageDelete: (imageId: string) => void
 }) {
   const navigate = useNavigate()
   const { imageId } = useParams()
@@ -40,6 +44,10 @@ export function ImageDetailPage({
   const [isEditingRatings, setIsEditingRatings] = useState(false)
   const [isInfoOpen, setIsInfoOpen] = useState(false)
   const [isEditingMetadata, setIsEditingMetadata] = useState(false)
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
+  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'deleting' | 'error'>(
+    'idle',
+  )
   const [metadataDraftImageId, setMetadataDraftImageId] = useState('')
   const [metadataTitle, setMetadataTitle] = useState('')
   const [metadataDescription, setMetadataDescription] = useState('')
@@ -170,6 +178,18 @@ export function ImageDetailPage({
     }
   }
 
+  const confirmDeleteImage = async () => {
+    setDeleteStatus('deleting')
+
+    try {
+      await deleteImage(image.id)
+      onImageDelete(image.id)
+      navigate('/')
+    } catch {
+      setDeleteStatus('error')
+    }
+  }
+
   return (
     <main className="detail-layout">
       <button className="back-button" type="button" onClick={() => navigate(-1)}>
@@ -224,6 +244,21 @@ export function ImageDetailPage({
               >
                 {isEditingMetadata ? <XMarkIcon /> : <PencilSquareIcon />}
               </button>
+              <button
+                aria-expanded={isConfirmingDelete}
+                aria-label={
+                  isConfirmingDelete ? 'Close delete confirmation' : 'Delete image'
+                }
+                className="icon-action icon-action-danger"
+                disabled={deleteStatus === 'deleting'}
+                onClick={() => {
+                  setDeleteStatus('idle')
+                  setIsConfirmingDelete((current) => !current)
+                }}
+                type="button"
+              >
+                {isConfirmingDelete ? <XMarkIcon /> : <TrashIcon />}
+              </button>
               </div>
               {isInfoOpen ? (
                 <div className="detail-info-panel">
@@ -241,6 +276,38 @@ export function ImageDetailPage({
                       <dd>{image.sortAt.toLocaleDateString()}</dd>
                     </div>
                   </dl>
+                </div>
+              ) : null}
+              {isConfirmingDelete ? (
+                <div className="delete-confirm-panel" role="alertdialog">
+                  <p>
+                    Delete this image from the gallery? Public display and thumb
+                    files in S3 will also be deleted.
+                  </p>
+                  <div>
+                    <button
+                      className="danger-action"
+                      disabled={deleteStatus === 'deleting'}
+                      onClick={confirmDeleteImage}
+                      type="button"
+                    >
+                      {deleteStatus === 'deleting' ? 'Deleting' : 'Delete'}
+                    </button>
+                    <button
+                      className="secondary-action"
+                      disabled={deleteStatus === 'deleting'}
+                      onClick={() => {
+                        setDeleteStatus('idle')
+                        setIsConfirmingDelete(false)
+                      }}
+                      type="button"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  {deleteStatus === 'error' ? (
+                    <p role="alert">Could not delete the image.</p>
+                  ) : null}
                 </div>
               ) : null}
             </>

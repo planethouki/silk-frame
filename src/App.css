@@ -571,6 +571,21 @@ h2 {
   outline: none;
 }
 
+.icon-action:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.icon-action-danger {
+  color: #a13d2d;
+}
+
+.icon-action-danger:hover,
+.icon-action-danger:focus-visible {
+  background: #f9e5df;
+  border-color: #e7b7aa;
+}
+
 .icon-action svg {
   height: 17px;
   width: 17px;
@@ -885,6 +900,56 @@ h2 {
 .primary-action:disabled {
   cursor: wait;
   opacity: 0.62;
+}
+
+.secondary-action,
+.danger-action {
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  padding: 10px 16px;
+}
+
+.secondary-action {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.danger-action {
+  background: #a13d2d;
+  color: var(--surface);
+}
+
+.secondary-action:disabled,
+.danger-action:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.delete-confirm-panel {
+  background: #fff1ed;
+  border: 1px solid #e7b7aa;
+  border-radius: 8px;
+  color: var(--ink);
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 16px;
+}
+
+.delete-confirm-panel p {
+  margin: 0;
+}
+
+.delete-confirm-panel p[role='alert'] {
+  color: #a13d2d;
+}
+
+.delete-confirm-panel div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .secondary-action {

@@ -86,6 +86,12 @@ function App() {
     )
   }
 
+  const deleteImageFromState = (imageId: string) => {
+    setImages((currentImages) =>
+      currentImages.filter((image) => image.id !== imageId),
+    )
+  }
+
   const confirmAge = () => {
     saveAgeVerificationCookie()
     setIsAgeVerified(true)
@@ -109,6 +115,7 @@ function App() {
           element={
             <ImageDetailPage
               images={sortedImages}
+              onImageDelete={deleteImageFromState}
               onImageChange={updateImageInState}
               user={user}
             />

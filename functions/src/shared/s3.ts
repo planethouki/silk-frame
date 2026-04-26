@@ -1,4 +1,5 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -23,14 +24,8 @@ function ensureS3Config() {
   }
 }
 
-export async function signedPutUrl(
-  key: string,
-  contentType: string,
-  variant: UploadVariant,
-) {
-  ensureS3Config();
-
-  const s3Client = new S3Client({
+function createS3Client() {
+  return new S3Client({
     region: awsRegion.value(),
     requestChecksumCalculation: "WHEN_REQUIRED",
     credentials: {
@@ -38,6 +33,16 @@ export async function signedPutUrl(
       secretAccessKey: awsSecretAccessKey.value(),
     },
   });
+}
+
+export async function signedPutUrl(
+  key: string,
+  contentType: string,
+  variant: UploadVariant,
+) {
+  ensureS3Config();
+
+  const s3Client = createS3Client();
 
   const command = new PutObjectCommand({
     Bucket: s3Bucket.value(),
@@ -55,14 +60,7 @@ export async function signedPutUrl(
 export async function signedGetUrl(key: string) {
   ensureS3Config();
 
-  const s3Client = new S3Client({
-    region: awsRegion.value(),
-    requestChecksumCalculation: "WHEN_REQUIRED",
-    credentials: {
-      accessKeyId: awsAccessKeyId.value(),
-      secretAccessKey: awsSecretAccessKey.value(),
-    },
-  });
+  const s3Client = createS3Client();
 
   const command = new GetObjectCommand({
     Bucket: s3Bucket.value(),
@@ -77,4 +75,29 @@ export async function signedGetUrl(key: string) {
     url: await getSignedUrl(s3Client, command, {expiresIn}),
     expiresIn,
   };
+}
+
+export async function deletePublicObjects(keys: string[]) {
+  ensureS3Config();
+
+  const publicKeys = [...new Set(keys)]
+    .map((key) => key.trim())
+    .filter((key) => key.startsWith("public/"));
+
+  if (publicKeys.length === 0) {
+    return;
+  }
+
+  const s3Client = createS3Client();
+
+  await Promise.all(
+    publicKeys.map((key) =>
+      s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: s3Bucket.value(),
+          Key: key,
+        }),
+      ),
+    ),
+  );
 }
