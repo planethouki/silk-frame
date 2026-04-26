@@ -6,9 +6,9 @@
   align-items: center;
   background: color-mix(in srgb, var(--surface) 92%, transparent);
   border-bottom: 1px solid var(--border);
-  display: flex;
+  display: grid;
   gap: 20px;
-  justify-content: space-between;
+  grid-template-columns: auto 1fr auto;
   min-height: 64px;
   padding: 0 28px;
   position: sticky;
@@ -18,6 +18,7 @@
 
 .brand-button,
 .main-nav a,
+.header-actions a,
 .back-button,
 .tag-row a,
 .tag-list a,
@@ -44,9 +45,11 @@
 .main-nav {
   display: flex;
   gap: 4px;
+  justify-content: center;
 }
 
-.main-nav a {
+.main-nav a,
+.header-actions a {
   background: transparent;
   border-radius: 999px;
   color: var(--muted);
@@ -54,10 +57,33 @@
 }
 
 .main-nav a:hover,
-.main-nav a:focus-visible {
+.main-nav a:focus-visible,
+.header-actions a:hover,
+.header-actions a:focus-visible {
   background: var(--soft);
   color: var(--ink);
   outline: none;
+}
+
+.header-actions {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.admin-icon-link {
+  align-items: center;
+  display: inline-flex;
+  height: 36px;
+  justify-content: center;
+  padding: 0;
+  width: 36px;
+}
+
+.admin-icon-link svg {
+  height: 18px;
+  width: 18px;
 }
 
 main {
@@ -180,7 +206,46 @@ h1 {
 
 .detail-copy {
   align-self: end;
+  min-width: 0;
   padding-bottom: 10px;
+}
+
+.detail-info-button {
+  margin-bottom: 12px;
+}
+
+.detail-info-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 18px;
+  padding: 14px;
+}
+
+.detail-info-panel dl {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  min-width: 0;
+}
+
+.detail-info-panel div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.detail-info-panel dt {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.detail-info-panel dd {
+  color: var(--ink);
+  margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .detail-copy p {
@@ -640,11 +705,17 @@ h1 {
 
 @media (max-width: 760px) {
   .top-bar {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    grid-template-columns: 1fr auto;
     gap: 10px;
     padding: 16px;
     position: static;
+  }
+
+  .main-nav {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    order: 2;
   }
 
   main {

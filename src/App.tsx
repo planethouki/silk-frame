@@ -97,7 +97,7 @@ function App() {
 
   return (
     <Routes>
-      <Route element={<MainLayout />}>
+      <Route element={<MainLayout user={user} />}>
         <Route
           path="/"
           element={

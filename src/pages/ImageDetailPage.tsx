@@ -1,6 +1,10 @@
 import { Link, useNavigate, useParams } from 'react-router'
 import { useState } from 'react'
-import { PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import {
+  InformationCircleIcon,
+  PencilSquareIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline'
 import { RatingControl } from '../components/RatingControl'
 import { slugify } from '../lib/gallery'
 import { getHighResolutionImageUrl } from '../lib/highResolutionApi'
@@ -31,6 +35,7 @@ export function ImageDetailPage({
     'idle' | 'saving-heart' | 'saving-star' | 'error'
   >('idle')
   const [isEditingRatings, setIsEditingRatings] = useState(false)
+  const [isInfoOpen, setIsInfoOpen] = useState(false)
 
   if (!image) {
     return <PlaceholderPage title="Image not found" user={user} />
@@ -88,9 +93,33 @@ export function ImageDetailPage({
       <article>
         <img className="detail-image" src={image.displayUrl} alt={image.title} />
         <div className="detail-copy">
-          <p className="eyebrow">{image.sortAt.toLocaleDateString()}</p>
-          <h1>{image.title}</h1>
-          <p>{image.description}</p>
+          <button
+            aria-expanded={isInfoOpen}
+            aria-label={isInfoOpen ? 'Hide image information' : 'Show image information'}
+            className="icon-action detail-info-button"
+            onClick={() => setIsInfoOpen((current) => !current)}
+            type="button"
+          >
+            {isInfoOpen ? <XMarkIcon /> : <InformationCircleIcon />}
+          </button>
+          {isInfoOpen ? (
+            <div className="detail-info-panel">
+              <dl>
+                <div>
+                  <dt>Title</dt>
+                  <dd>{image.title}</dd>
+                </div>
+                <div>
+                  <dt>Description</dt>
+                  <dd>{image.description || '-'}</dd>
+                </div>
+                <div>
+                  <dt>Date</dt>
+                  <dd>{image.sortAt.toLocaleDateString()}</dd>
+                </div>
+              </dl>
+            </div>
+          ) : null}
           <div className="tag-row">
             {image.tags.map((tag) => (
               <Link key={tag} to={`/tags/${slugify(tag)}`}>
