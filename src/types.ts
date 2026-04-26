@@ -1,5 +1,7 @@
 import type { User } from 'firebase/auth'
 
+export type ImageRating = 1 | 2 | 3 | 4 | 5 | null
+
 export type GalleryImage = {
   id: string
   title: string
@@ -11,6 +13,8 @@ export type GalleryImage = {
   thumbUrl: string
   width: number
   height: number
+  heartRating: ImageRating
+  starRating: ImageRating
   sortAt: Date
   takenAt?: Date
 }

@@ -21,7 +21,6 @@ import { AdminPage } from './pages/AdminPage'
 import { AdminUploadPage } from './pages/AdminUploadPage'
 import { GalleryPage } from './pages/GalleryPage'
 import { ImageDetailPage } from './pages/ImageDetailPage'
-import { PlaceholderPage } from './pages/PlaceholderPage'
 import { TagGalleryPage } from './pages/TagGalleryPage'
 import { TagsPage } from './pages/TagsPage'
 import type { GalleryImage, LoadState } from './types'
@@ -79,6 +78,14 @@ function App() {
     await signOut(getAuth(firebaseApp))
   }
 
+  const updateImageInState = (nextImage: GalleryImage) => {
+    setImages((currentImages) =>
+      currentImages.map((image) =>
+        image.id === nextImage.id ? nextImage : image,
+      ),
+    )
+  }
+
   const confirmAge = () => {
     saveAgeVerificationCookie()
     setIsAgeVerified(true)
@@ -99,7 +106,13 @@ function App() {
         />
         <Route
           path="/images/:imageId"
-          element={<ImageDetailPage images={sortedImages} user={user} />}
+          element={
+            <ImageDetailPage
+              images={sortedImages}
+              onImageChange={updateImageInState}
+              user={user}
+            />
+          }
         />
         <Route path="/tags" element={<TagsPage tags={tags} />} />
         <Route
@@ -118,10 +131,6 @@ function App() {
               hasFirebaseConfig={hasFirebaseConfig}
             />
           }
-        />
-        <Route
-          path="/favorites"
-          element={<PlaceholderPage title="Favorites" user={user} />}
         />
         <Route
           path="/admin/upload"

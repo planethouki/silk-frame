@@ -1,17 +1,22 @@
 import { Link, useNavigate, useParams } from 'react-router'
 import { useState } from 'react'
+import { PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { RatingControl } from '../components/RatingControl'
 import { slugify } from '../lib/gallery'
 import { getHighResolutionImageUrl } from '../lib/highResolutionApi'
+import { updateImageRating } from '../lib/ratingsApi'
 import { PlaceholderPage } from './PlaceholderPage'
-import type { GalleryImage } from '../types'
+import type { GalleryImage, ImageRating } from '../types'
 import type { User } from 'firebase/auth'
 
 export function ImageDetailPage({
   images,
   user,
+  onImageChange,
 }: {
   images: GalleryImage[]
   user: User | null
+  onImageChange: (image: GalleryImage) => void
 }) {
   const navigate = useNavigate()
   const { imageId } = useParams()
@@ -22,6 +27,10 @@ export function ImageDetailPage({
     url?: string
     expiresAt?: string
   } | null>(null)
+  const [ratingStatus, setRatingStatus] = useState<
+    'idle' | 'saving-heart' | 'saving-star' | 'error'
+  >('idle')
+  const [isEditingRatings, setIsEditingRatings] = useState(false)
 
   if (!image) {
     return <PlaceholderPage title="Image not found" user={user} />
@@ -52,6 +61,25 @@ export function ImageDetailPage({
     ? new Date(currentHighRes.expiresAt).toLocaleTimeString()
     : ''
 
+  const saveRating = async (ratingKind: 'heart' | 'star', value: ImageRating) => {
+    const previousImage = image
+    const nextImage = {
+      ...image,
+      [ratingKind === 'heart' ? 'heartRating' : 'starRating']: value,
+    }
+
+    onImageChange(nextImage)
+    setRatingStatus(ratingKind === 'heart' ? 'saving-heart' : 'saving-star')
+
+    try {
+      await updateImageRating(image.id, ratingKind, value)
+      setRatingStatus('idle')
+    } catch {
+      onImageChange(previousImage)
+      setRatingStatus('error')
+    }
+  }
+
   return (
     <main className="detail-layout">
       <button className="back-button" type="button" onClick={() => navigate(-1)}>
@@ -71,30 +99,73 @@ export function ImageDetailPage({
             ))}
           </div>
           {user ? (
-            <div className="high-res-panel">
-              <button
-                className="primary-action"
-                type="button"
-                onClick={requestHighResolutionImage}
-                disabled={highResState === 'loading'}
-              >
-                {highResState === 'loading' ? 'Loading high-res' : 'View high-res'}
-              </button>
-              {highResState === 'ready' ? (
-                <>
-                  <a href={highResUrl} target="_blank" rel="noreferrer">
-                    Open original
-                  </a>
-                  <small>Signed URL expires at {highResExpiresText}</small>
-                </>
-              ) : null}
-              {highResState === 'error' ? (
-                <p role="alert">
-                  Could not load the high-resolution image. Check your admin role
-                  and Functions configuration.
-                </p>
-              ) : null}
-            </div>
+            <>
+              <div className="rating-panel" aria-label="Admin ratings">
+                <div className="rating-summary">
+                  <span aria-label="Heart rating">
+                    ♥ {image.heartRating ?? '-'}
+                  </span>
+                  <span aria-label="Star rating">★ {image.starRating ?? '-'}</span>
+                  <button
+                    aria-label={
+                      isEditingRatings ? 'Close rating editor' : 'Edit ratings'
+                    }
+                    className="icon-action"
+                    onClick={() => setIsEditingRatings((current) => !current)}
+                    type="button"
+                  >
+                    {isEditingRatings ? <XMarkIcon /> : <PencilSquareIcon />}
+                  </button>
+                </div>
+                {isEditingRatings ? (
+                  <div className="rating-editor">
+                    <RatingControl
+                      activeSymbol="♥"
+                      disabled={ratingStatus === 'saving-heart'}
+                      inactiveSymbol="♡"
+                      label="Heart rating"
+                      onChange={(value) => void saveRating('heart', value)}
+                      value={image.heartRating}
+                    />
+                    <RatingControl
+                      activeSymbol="★"
+                      disabled={ratingStatus === 'saving-star'}
+                      inactiveSymbol="☆"
+                      label="Star rating"
+                      onChange={(value) => void saveRating('star', value)}
+                      value={image.starRating}
+                    />
+                    {ratingStatus === 'error' ? (
+                      <p role="alert">Could not update the rating.</p>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+              <div className="high-res-panel">
+                <button
+                  className="primary-action"
+                  type="button"
+                  onClick={requestHighResolutionImage}
+                  disabled={highResState === 'loading'}
+                >
+                  {highResState === 'loading' ? 'Loading high-res' : 'View high-res'}
+                </button>
+                {highResState === 'ready' ? (
+                  <>
+                    <a href={highResUrl} target="_blank" rel="noreferrer">
+                      Open original
+                    </a>
+                    <small>Signed URL expires at {highResExpiresText}</small>
+                  </>
+                ) : null}
+                {highResState === 'error' ? (
+                  <p role="alert">
+                    Could not load the high-resolution image. Check your admin role
+                    and Functions configuration.
+                  </p>
+                ) : null}
+              </div>
+            </>
           ) : null}
         </div>
       </article>

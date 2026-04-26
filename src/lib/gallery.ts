@@ -9,7 +9,7 @@ import {
   type Timestamp,
 } from 'firebase/firestore'
 import { firebaseApp } from './firebase'
-import type { GalleryImage, GalleryTag } from '../types'
+import type { GalleryImage, GalleryTag, ImageRating } from '../types'
 
 export const slugify = (tag: string) =>
   tag
@@ -35,6 +35,14 @@ const parseDate = (value: unknown): Date => {
     return (value as Timestamp).toDate()
   }
   return new Date()
+}
+
+const parseRating = (value: unknown): ImageRating => {
+  const rating = Number(value)
+  if (Number.isInteger(rating) && rating >= 1 && rating <= 5) {
+    return rating as ImageRating
+  }
+  return null
 }
 
 export async function loadPublicImages(): Promise<GalleryImage[]> {
@@ -63,6 +71,8 @@ export async function loadPublicImages(): Promise<GalleryImage[]> {
       thumbUrl: String(data.thumbUrl ?? data.displayUrl ?? ''),
       width: Number(data.width ?? 1),
       height: Number(data.height ?? 1),
+      heartRating: parseRating(data.heartRating),
+      starRating: parseRating(data.starRating),
       sortAt: parseDate(data.sortAt),
       takenAt: data.takenAt ? parseDate(data.takenAt) : undefined,
     }

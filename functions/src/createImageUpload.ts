@@ -158,6 +158,8 @@ export const createImageUpload = onCall(
       status: "uploading",
       width,
       height,
+      heartRating: null,
+      starRating: null,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
       takenAt: takenAt || sortAt,
