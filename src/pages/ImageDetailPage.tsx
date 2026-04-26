@@ -74,6 +74,17 @@ export function ImageDetailPage({
     navigate(`/images/${nextImage.id}`)
   }
 
+  const goBackToList = () => {
+    window.requestAnimationFrame(() => {
+      if (window.history.state?.idx > 0) {
+        navigate(-1)
+        return
+      }
+
+      navigate('/')
+    })
+  }
+
   const currentHighRes =
     highResRequest?.imageId === image.id ? highResRequest : null
   const highResState = currentHighRes?.status ?? 'idle'
@@ -172,6 +183,7 @@ export function ImageDetailPage({
           key={image.id}
           onNext={goToNextImage}
           onPrevious={goToPreviousImage}
+          onSwipeDown={goBackToList}
           src={image.displayUrl}
         />
         <div className="detail-copy">

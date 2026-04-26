@@ -58,6 +58,7 @@ export function TouchImageViewer({
   canGoPrevious,
   onNext,
   onPrevious,
+  onSwipeDown,
   src,
 }: {
   alt: string
@@ -65,6 +66,7 @@ export function TouchImageViewer({
   canGoPrevious: boolean
   onNext: () => void
   onPrevious: () => void
+  onSwipeDown?: () => void
   src: string
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -94,6 +96,13 @@ export function TouchImageViewer({
     updateTransform({ scale: MIN_SCALE, x: 0, y: 0 })
   }
 
+  const clearGesture = () => {
+    pointersRef.current.clear()
+    dragStartRef.current = null
+    pinchStartRef.current = null
+    didPinchRef.current = false
+  }
+
   const startPinch = () => {
     const points = [...pointersRef.current.values()]
     if (points.length < 2) return
@@ -107,7 +116,9 @@ export function TouchImageViewer({
   }
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    event.currentTarget.setPointerCapture(event.pointerId)
+    if (event.pointerType !== 'touch') {
+      event.currentTarget.setPointerCapture(event.pointerId)
+    }
     const point = { x: event.clientX, y: event.clientY }
     pointersRef.current.set(event.pointerId, point)
 
@@ -171,6 +182,10 @@ export function TouchImageViewer({
 
   const handlePointerEnd = (event: PointerEvent<HTMLDivElement>) => {
     const startPoint = dragStartRef.current
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+
     pointersRef.current.delete(event.pointerId)
 
     if (pointersRef.current.size >= 2) {
@@ -200,6 +215,19 @@ export function TouchImageViewer({
 
     const deltaX = event.clientX - startPoint.x
     const deltaY = event.clientY - startPoint.y
+    if (
+      event.pointerType === 'touch' &&
+      onSwipeDown &&
+      deltaY > SWIPE_DISTANCE &&
+      Math.abs(deltaY) > Math.abs(deltaX)
+    ) {
+      event.preventDefault()
+      event.stopPropagation()
+      clearGesture()
+      onSwipeDown()
+      return
+    }
+
     if (Math.abs(deltaX) < SWIPE_DISTANCE || Math.abs(deltaX) < Math.abs(deltaY)) {
       return
     }
