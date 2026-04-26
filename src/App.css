@@ -100,6 +100,12 @@ main {
   margin-bottom: 24px;
 }
 
+.heading-actions {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
 .eyebrow {
   color: var(--muted);
   font-size: 13px;
@@ -146,6 +152,10 @@ h2 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.image-grid[data-frame='portrait'] .image-tile {
+  aspect-ratio: 3 / 4;
+}
+
 .image-tile {
   aspect-ratio: 1 / 1;
   background: var(--soft);
@@ -159,9 +169,81 @@ h2 {
 
 .image-tile img {
   height: 100%;
-  object-fit: cover;
+  object-fit: var(--thumb-fit, cover);
+  object-position: center var(--thumb-y, center);
   transition: scale 220ms ease, filter 220ms ease;
   width: 100%;
+}
+
+.image-grid[data-fit='contain'] {
+  --thumb-fit: contain;
+}
+
+.image-grid[data-y='top'] {
+  --thumb-y: top;
+}
+
+.image-grid[data-y='bottom'] {
+  --thumb-y: bottom;
+}
+
+.thumb-settings-panel {
+  align-items: end;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 14px;
+}
+
+.thumb-settings-panel fieldset {
+  border: 0;
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  min-inline-size: 0;
+  padding: 0;
+}
+
+.thumb-settings-panel legend {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 0;
+}
+
+.segmented-control {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  display: flex;
+  overflow: hidden;
+}
+
+.segmented-control button {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.segmented-control button + button {
+  border-left: 1px solid var(--border);
+}
+
+.segmented-control button[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.segmented-control button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
 }
 
 .image-tile span {

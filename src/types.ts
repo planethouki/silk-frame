@@ -27,6 +27,12 @@ export type GalleryTag = {
 
 export type LoadState = 'loading' | 'ready' | 'offline'
 
+export type GalleryThumbSettings = {
+  fit: 'cover' | 'contain'
+  frame: 'square' | 'portrait'
+  verticalAlign: 'top' | 'center' | 'bottom'
+}
+
 export type AdminSession = {
   user: User | null
   signIn: (email: string, password: string) => Promise<void>

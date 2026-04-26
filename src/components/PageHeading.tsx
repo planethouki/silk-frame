@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { LoadState } from '../types'
 
 export function PageHeading({
@@ -5,11 +6,13 @@ export function PageHeading({
   title,
   loadState,
   imageCount,
+  actions,
 }: {
   eyebrow: string
   title: string
   loadState?: LoadState
   imageCount?: number
+  actions?: ReactNode
 }) {
   return (
     <section className="gallery-heading">
@@ -17,15 +20,18 @@ export function PageHeading({
         <p className="eyebrow">{eyebrow}</p>
         <h1>{title}</h1>
       </div>
-      {loadState ? (
-        <p className="status-pill">
-          {loadState === 'loading'
-            ? 'Loading'
-            : loadState === 'offline'
-              ? 'Preview data'
-              : `${imageCount ?? 0} images`}
-        </p>
-      ) : null}
+      <div className="heading-actions">
+        {loadState ? (
+          <p className="status-pill">
+            {loadState === 'loading'
+              ? 'Loading'
+              : loadState === 'offline'
+                ? 'Preview data'
+                : `${imageCount ?? 0} images`}
+          </p>
+        ) : null}
+        {actions}
+      </div>
     </section>
   )
 }
