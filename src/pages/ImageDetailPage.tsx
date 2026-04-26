@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams } from 'react-router'
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import {
   InformationCircleIcon,
   PencilSquareIcon,
@@ -9,6 +9,7 @@ import { RatingControl } from '../components/RatingControl'
 import { TouchImageViewer } from '../components/TouchImageViewer'
 import { slugify } from '../lib/gallery'
 import { getHighResolutionImageUrl } from '../lib/highResolutionApi'
+import { updateImageMetadata } from '../lib/metadataApi'
 import { updateImageRating } from '../lib/ratingsApi'
 import { PlaceholderPage } from './PlaceholderPage'
 import type { GalleryImage, ImageRating } from '../types'
@@ -38,6 +39,14 @@ export function ImageDetailPage({
   >('idle')
   const [isEditingRatings, setIsEditingRatings] = useState(false)
   const [isInfoOpen, setIsInfoOpen] = useState(false)
+  const [isEditingMetadata, setIsEditingMetadata] = useState(false)
+  const [metadataDraftImageId, setMetadataDraftImageId] = useState('')
+  const [metadataTitle, setMetadataTitle] = useState('')
+  const [metadataDescription, setMetadataDescription] = useState('')
+  const [metadataTagsText, setMetadataTagsText] = useState('')
+  const [metadataStatus, setMetadataStatus] = useState<'idle' | 'saving' | 'error'>(
+    'idle',
+  )
 
   if (!image) {
     return <PlaceholderPage title="Image not found" user={user} />
@@ -46,6 +55,14 @@ export function ImageDetailPage({
   const previousImage = currentIndex > 0 ? images[currentIndex - 1] : null
   const nextImage =
     currentIndex < images.length - 1 ? images[currentIndex + 1] : null
+  const isMetadataDraftCurrent = metadataDraftImageId === image.id
+  const metadataFormTitle = isMetadataDraftCurrent ? metadataTitle : image.title
+  const metadataFormDescription = isMetadataDraftCurrent
+    ? metadataDescription
+    : image.description
+  const metadataFormTagsText = isMetadataDraftCurrent
+    ? metadataTagsText
+    : image.tags.join(', ')
 
   const goToPreviousImage = () => {
     if (!previousImage) return
@@ -101,6 +118,47 @@ export function ImageDetailPage({
     }
   }
 
+  const saveMetadata = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    const title = metadataFormTitle.trim()
+    const description = metadataFormDescription.trim()
+    const tags = metadataFormTagsText
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+
+    if (!title) {
+      setMetadataStatus('error')
+      return
+    }
+
+    const previousImage = image
+    const nextImage = {
+      ...image,
+      title,
+      description,
+      tags,
+    }
+
+    onImageChange(nextImage)
+    setMetadataStatus('saving')
+
+    try {
+      await updateImageMetadata({
+        imageId: image.id,
+        title,
+        description,
+        tags,
+      })
+      setMetadataStatus('idle')
+      setIsEditingMetadata(false)
+    } catch {
+      onImageChange(previousImage)
+      setMetadataStatus('error')
+    }
+  }
+
   return (
     <main className="detail-layout">
       <button className="back-button" type="button" onClick={() => navigate(-1)}>
@@ -117,15 +175,44 @@ export function ImageDetailPage({
           src={image.displayUrl}
         />
         <div className="detail-copy">
-          <button
-            aria-expanded={isInfoOpen}
-            aria-label={isInfoOpen ? 'Hide image information' : 'Show image information'}
-            className="icon-action detail-info-button"
-            onClick={() => setIsInfoOpen((current) => !current)}
-            type="button"
-          >
-            {isInfoOpen ? <XMarkIcon /> : <InformationCircleIcon />}
-          </button>
+          <div className="detail-tool-row">
+            <button
+              aria-expanded={isInfoOpen}
+              aria-label={
+                isInfoOpen ? 'Hide image information' : 'Show image information'
+              }
+              className="icon-action"
+              onClick={() => setIsInfoOpen((current) => !current)}
+              type="button"
+            >
+              {isInfoOpen ? <XMarkIcon /> : <InformationCircleIcon />}
+            </button>
+            {user ? (
+              <button
+                aria-expanded={isEditingMetadata}
+                aria-label={
+                  isEditingMetadata ? 'Close metadata editor' : 'Edit metadata'
+                }
+                className="icon-action"
+                onClick={() =>
+                  setIsEditingMetadata((current) => {
+                    const next = !current
+                    if (next) {
+                      setMetadataStatus('idle')
+                      setMetadataDraftImageId(image.id)
+                      setMetadataTitle(image.title)
+                      setMetadataDescription(image.description)
+                      setMetadataTagsText(image.tags.join(', '))
+                    }
+                    return next
+                  })
+                }
+                type="button"
+              >
+                {isEditingMetadata ? <XMarkIcon /> : <PencilSquareIcon />}
+              </button>
+            ) : null}
+          </div>
           {isInfoOpen ? (
             <div className="detail-info-panel">
               <dl>
@@ -143,6 +230,60 @@ export function ImageDetailPage({
                 </div>
               </dl>
             </div>
+          ) : null}
+          {user && isEditingMetadata ? (
+            <form className="metadata-editor" onSubmit={saveMetadata}>
+              <label>
+                <span>Title</span>
+                <input
+                  disabled={metadataStatus === 'saving'}
+                  onChange={(event) => {
+                    setMetadataDraftImageId(image.id)
+                    setMetadataTitle(event.target.value)
+                  }}
+                  required
+                  type="text"
+                  value={metadataFormTitle}
+                />
+              </label>
+              <label>
+                <span>Description</span>
+                <textarea
+                  disabled={metadataStatus === 'saving'}
+                  onChange={(event) => {
+                    setMetadataDraftImageId(image.id)
+                    setMetadataDescription(event.target.value)
+                  }}
+                  rows={4}
+                  value={metadataFormDescription}
+                />
+              </label>
+              <label>
+                <span>Tags</span>
+                <input
+                  disabled={metadataStatus === 'saving'}
+                  onChange={(event) => {
+                    setMetadataDraftImageId(image.id)
+                    setMetadataTagsText(event.target.value)
+                  }}
+                  placeholder="city, night, texture"
+                  type="text"
+                  value={metadataFormTagsText}
+                />
+              </label>
+              {metadataStatus === 'error' ? (
+                <p role="alert">
+                  Could not update the image information. Title is required.
+                </p>
+              ) : null}
+              <button
+                className="primary-action"
+                disabled={metadataStatus === 'saving'}
+                type="submit"
+              >
+                {metadataStatus === 'saving' ? 'Saving' : 'Save changes'}
+              </button>
+            </form>
           ) : null}
           <div className="tag-row">
             {image.tags.map((tag) => (
