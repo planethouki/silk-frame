@@ -119,6 +119,16 @@ h1 {
   margin: 0;
 }
 
+h2 {
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 520;
+  letter-spacing: 0;
+  line-height: 1;
+  margin: 0;
+}
+
 .status-pill {
   background: var(--soft);
   border: 1px solid var(--border);
@@ -795,6 +805,98 @@ h1 {
   opacity: 0.62;
 }
 
+.secondary-action {
+  background: var(--soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  justify-self: start;
+  padding: 8px 14px;
+}
+
+.secondary-action:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.batch-upload-form {
+  margin-top: -6px;
+}
+
+.batch-upload-list {
+  display: grid;
+  gap: 12px;
+}
+
+.batch-upload-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 150px minmax(0, 1fr);
+  padding: 12px;
+}
+
+.batch-upload-item img {
+  aspect-ratio: 1 / 1;
+  background: var(--soft);
+  object-fit: cover;
+  width: 100%;
+}
+
+.batch-upload-item > div {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.batch-upload-item label {
+  color: var(--ink);
+  display: grid;
+  gap: 7px;
+}
+
+.batch-upload-item label span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.batch-upload-item input {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--ink);
+  font: inherit;
+  min-width: 0;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+.batch-upload-item dl {
+  display: grid;
+  gap: 8px 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.batch-upload-item dl div {
+  min-width: 0;
+}
+
+.batch-upload-item dt {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.batch-upload-item dd {
+  color: var(--ink);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 .age-gate {
   align-items: center;
   display: grid;
@@ -891,7 +993,9 @@ h1 {
   }
 
   .upload-preview,
-  .form-grid {
+  .form-grid,
+  .batch-upload-item,
+  .batch-upload-item dl {
     grid-template-columns: 1fr;
   }
 }
