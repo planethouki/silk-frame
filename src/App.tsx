@@ -5,8 +5,8 @@ import {
   signOut,
   type User,
 } from 'firebase/auth'
-import { useEffect, useMemo, useState } from 'react'
-import { Navigate, Route, Routes } from 'react-router'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router'
 import './App.css'
 import { AgeGate } from './components/AgeGate'
 import { MainLayout } from './layouts/MainLayout'
@@ -15,7 +15,8 @@ import {
   saveAgeVerificationCookie,
 } from './lib/ageVerification'
 import { firebaseApp, hasFirebaseConfig } from './lib/firebase'
-import { buildTags, loadPublicImages } from './lib/gallery'
+import { buildTags } from './lib/gallery'
+import { usePublicImages } from './lib/usePublicImages'
 import { AdminImagePage } from './pages/AdminImagePage'
 import { AdminPage } from './pages/AdminPage'
 import { AdminUploadPage } from './pages/AdminUploadPage'
@@ -23,43 +24,56 @@ import { GalleryPage } from './pages/GalleryPage'
 import { ImageDetailPage } from './pages/ImageDetailPage'
 import { TagGalleryPage } from './pages/TagGalleryPage'
 import { TagsPage } from './pages/TagsPage'
-import type { GalleryImage, LoadState } from './types'
+
+const isGalleryRoute = (pathname: string) =>
+  pathname === '/' || pathname === '/tags' || pathname.startsWith('/tags/')
+
+const recentRefreshWindowMs = 5000
 
 function App() {
-  const [images, setImages] = useState<GalleryImage[]>([])
-  const [loadState, setLoadState] = useState<LoadState>(
-    hasFirebaseConfig ? 'loading' : 'offline',
-  )
+  const location = useLocation()
+  const previousPathnameRef = useRef(location.pathname)
+  const lastPublicImagesRefreshAtRef = useRef(0)
   const [user, setUser] = useState<User | null>(null)
   const [isAgeVerified, setIsAgeVerified] = useState(hasAgeVerificationCookie)
+  const {
+    images,
+    loadState,
+    refreshPublicImages,
+    updatePublicImage,
+    deletePublicImage,
+  } = usePublicImages({ enabled: isAgeVerified })
 
-  useEffect(() => {
-    if (!isAgeVerified) return undefined
+  const refreshGalleryImages = useCallback(() => {
+    lastPublicImagesRefreshAtRef.current = Date.now()
+    refreshPublicImages()
+  }, [refreshPublicImages])
 
-    let mounted = true
+  const refreshGalleryImagesIfStale = useCallback(() => {
+    const lastRefreshAt = lastPublicImagesRefreshAtRef.current
+    if (Date.now() - lastRefreshAt < recentRefreshWindowMs) return
 
-    loadPublicImages()
-      .then((nextImages) => {
-        if (!mounted) return
-        setImages(nextImages)
-        setLoadState(hasFirebaseConfig ? 'ready' : 'offline')
-      })
-      .catch(() => {
-        if (!mounted) return
-        setImages([])
-        setLoadState('offline')
-      })
-
-    return () => {
-      mounted = false
-    }
-  }, [isAgeVerified])
+    refreshGalleryImages()
+  }, [refreshGalleryImages])
 
   useEffect(() => {
     if (!isAgeVerified) return undefined
     if (!firebaseApp) return undefined
     return onAuthStateChanged(getAuth(firebaseApp), setUser)
   }, [isAgeVerified])
+
+  useEffect(() => {
+    const previousPathname = previousPathnameRef.current
+    const nextPathname = location.pathname
+
+    previousPathnameRef.current = nextPathname
+
+    if (!isAgeVerified) return
+    if (!isGalleryRoute(nextPathname)) return
+    if (isGalleryRoute(previousPathname)) return
+
+    refreshGalleryImagesIfStale()
+  }, [isAgeVerified, location.pathname, refreshGalleryImagesIfStale])
 
   const sortedImages = useMemo(
     () => [...images].sort((a, b) => b.sortAt.getTime() - a.sortAt.getTime()),
@@ -76,20 +90,6 @@ function App() {
   const signOutAdmin = async () => {
     if (!firebaseApp) return
     await signOut(getAuth(firebaseApp))
-  }
-
-  const updateImageInState = (nextImage: GalleryImage) => {
-    setImages((currentImages) =>
-      currentImages.map((image) =>
-        image.id === nextImage.id ? nextImage : image,
-      ),
-    )
-  }
-
-  const deleteImageFromState = (imageId: string) => {
-    setImages((currentImages) =>
-      currentImages.filter((image) => image.id !== imageId),
-    )
   }
 
   const confirmAge = () => {
@@ -115,8 +115,8 @@ function App() {
           element={
             <ImageDetailPage
               images={sortedImages}
-              onImageDelete={deleteImageFromState}
-              onImageChange={updateImageInState}
+              onImageDelete={deletePublicImage}
+              onImageChange={updatePublicImage}
               user={user}
             />
           }
@@ -141,7 +141,12 @@ function App() {
         />
         <Route
           path="/admin/upload"
-          element={<AdminUploadPage user={user} />}
+          element={
+            <AdminUploadPage
+              user={user}
+              onUploadComplete={refreshGalleryImages}
+            />
+          }
         />
         <Route
           path="/admin/images/:imageId"

@@ -24,7 +24,13 @@ function currentDateTimeLocal() {
   return new Date(now.getTime() - offsetMs).toISOString().slice(0, 16)
 }
 
-export function AdminUploadPage({ user }: { user: User | null }) {
+export function AdminUploadPage({
+  user,
+  onUploadComplete,
+}: {
+  user: User | null
+  onUploadComplete: () => void
+}) {
   const initialDateTime = useMemo(() => currentDateTimeLocal(), [])
   const [file, setFile] = useState<File | null>(null)
   const [prepared, setPrepared] = useState<PreparedImageUpload | null>(null)
@@ -128,6 +134,7 @@ export function AdminUploadPage({ user }: { user: User | null }) {
       })
       setCreatedImageId(imageId)
       setStatus('done')
+      onUploadComplete()
     } catch (caughtError) {
       setStatus('error')
       setError(
@@ -211,9 +218,9 @@ export function AdminUploadPage({ user }: { user: User | null }) {
       updateBatchItem(item.id, { status: 'uploading', error: '', imageId: '' })
     })
 
-    await Promise.all(
+    const results = await Promise.all(
       uploadableItems.map(async (item) => {
-        if (!item.prepared) return
+        if (!item.prepared) return false
 
         try {
           const imageId = await uploadImage({
@@ -226,15 +233,21 @@ export function AdminUploadPage({ user }: { user: User | null }) {
             sortAt: batchSortAt,
           })
           updateBatchItem(item.id, { status: 'done', imageId })
+          return true
         } catch (caughtError) {
           updateBatchItem(item.id, {
             status: 'error',
             error:
               caughtError instanceof Error ? caughtError.message : 'Upload failed.',
           })
+          return false
         }
       }),
     )
+
+    if (results.some(Boolean)) {
+      onUploadComplete()
+    }
   }
 
   if (!user) {
