@@ -84,11 +84,6 @@ export function ImageDetailPage({
 
   const goBackToList = () => {
     window.requestAnimationFrame(() => {
-      if (window.history.state?.idx > 0) {
-        navigate(-1)
-        return
-      }
-
       navigate('/')
     })
   }
@@ -192,7 +187,7 @@ export function ImageDetailPage({
 
   return (
     <main className="detail-layout">
-      <button className="back-button" type="button" onClick={() => navigate(-1)}>
+      <button className="back-button" type="button" onClick={goBackToList}>
         Back
       </button>
       <article>
