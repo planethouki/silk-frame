@@ -122,6 +122,73 @@ S3 key や Firestore に保存する値の詳細は Functions 側を見る。原
 
 Functions 側の環境パラメータは `functions/src/shared/params.ts` を見る。CloudFront の Origin Path と S3 key 設計の関係を変える場合は、公開 URL の組み立ても一緒に確認する。
 
+## AWS IAM / S3
+
+Functions は `functions/src/shared/s3.ts` から S3 の署名付き URL を発行する。実際に必要な S3 権限は、アップロード用の `PutObject`、原本閲覧用の `GetObject`、公開派生画像削除用の `DeleteObject`。
+
+IAM ユーザーまたは IAM ロールには、だいたい以下のような identity policy を付ける。`YOUR_BUCKET_NAME` は実際のバケット名に置き換える。
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "UploadImages",
+      "Effect": "Allow",
+      "Action": "s3:PutObject",
+      "Resource": [
+        "arn:aws:s3:::YOUR_BUCKET_NAME/private/originals/*",
+        "arn:aws:s3:::YOUR_BUCKET_NAME/public/display/*",
+        "arn:aws:s3:::YOUR_BUCKET_NAME/public/thumbs/*"
+      ]
+    },
+    {
+      "Sid": "ReadOriginalsForSignedUrls",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::YOUR_BUCKET_NAME/private/originals/*"
+    },
+    {
+      "Sid": "DeletePublicDerivatives",
+      "Effect": "Allow",
+      "Action": "s3:DeleteObject",
+      "Resource": [
+        "arn:aws:s3:::YOUR_BUCKET_NAME/public/display/*",
+        "arn:aws:s3:::YOUR_BUCKET_NAME/public/thumbs/*"
+      ]
+    }
+  ]
+}
+```
+
+`s3:ListBucket` は今のコードでは不要。key の prefix を変えたら、この policy も `functions/src/createImageUpload.ts` と `functions/src/shared/s3.ts` に合わせて更新する。
+
+公開画像は S3 を public-read にせず、CloudFront からだけ読ませる。CloudFront Origin Access Control を使う場合、バケットポリシーは以下の形。`YOUR_BUCKET_NAME`、`YOUR_AWS_ACCOUNT_ID`、`YOUR_DISTRIBUTION_ID` を置き換える。
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowCloudFrontReadPublicImages",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "cloudfront.amazonaws.com"
+      },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::YOUR_BUCKET_NAME/public/*",
+      "Condition": {
+        "StringEquals": {
+          "AWS:SourceArn": "arn:aws:cloudfront::YOUR_AWS_ACCOUNT_ID:distribution/YOUR_DISTRIBUTION_ID"
+        }
+      }
+    }
+  ]
+}
+```
+
+バケットの Block Public Access は有効のままでよい。ブラウザが署名付き URL に直接 PUT するので、bucket policy とは別に S3 CORS で `PUT` と `Content-Type` header を許可する必要がある。
+
 ## 管理者まわり
 
 管理者判定は Functions 側の処理を見る。Firebase Authentication の email は Auth 側にあるので、Firestore に保存しない方針。
