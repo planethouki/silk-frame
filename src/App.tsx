@@ -107,7 +107,7 @@ function App() {
         <Route
           path="/"
           element={
-            <GalleryPage images={sortedImages} loadState={loadState} title="Latest" />
+            <GalleryPage images={sortedImages} loadState={loadState} title="Gallery" />
           }
         />
         <Route
