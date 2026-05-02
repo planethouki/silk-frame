@@ -1,5 +1,6 @@
 import { PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
+import { ContentNotice } from '../components/ContentNotice'
 import { GalleryGrid } from '../components/GalleryGrid'
 import { PageHeading } from '../components/PageHeading'
 import type { GalleryImage, GalleryThumbSettings, LoadState } from '../types'
@@ -71,6 +72,7 @@ export function GalleryPage({
           </button>
         }
       />
+      <ContentNotice />
       {isEditingThumbSettings ? (
         <section className="thumb-settings-panel" aria-label="Thumbnail settings">
           <fieldset>

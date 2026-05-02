@@ -146,6 +146,14 @@ h2 {
   white-space: nowrap;
 }
 
+.content-notice {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+  margin: -10px 0 24px;
+  max-width: 760px;
+}
+
 .image-grid {
   display: grid;
   gap: 3px;

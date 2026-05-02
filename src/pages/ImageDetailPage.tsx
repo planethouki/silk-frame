@@ -6,6 +6,7 @@ import {
   TrashIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
+import { ContentNotice } from '../components/ContentNotice'
 import { RatingControl } from '../components/RatingControl'
 import { TouchImageViewer } from '../components/TouchImageViewer'
 import { deleteImage } from '../lib/deleteImageApi'
@@ -190,6 +191,7 @@ export function ImageDetailPage({
       <button className="back-button" type="button" onClick={goBackToList}>
         Back
       </button>
+      <ContentNotice />
       <article>
         <TouchImageViewer
           alt={image.title}
