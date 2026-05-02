@@ -1,4 +1,5 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
+import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics'
 
 export const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -17,3 +18,9 @@ export const hasFirebaseConfig = Boolean(
 export const firebaseApp: FirebaseApp | null = hasFirebaseConfig
   ? initializeApp(firebaseConfig)
   : null
+
+export const firebaseAnalytics: Promise<Analytics | null> = firebaseApp
+  ? isSupported()
+      .then((supported) => (supported ? getAnalytics(firebaseApp) : null))
+      .catch(() => null)
+  : Promise.resolve(null)
