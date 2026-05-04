@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams } from 'react-router'
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import {
   InformationCircleIcon,
   PencilSquareIcon,
@@ -56,14 +56,21 @@ export function ImageDetailPage({
   const [metadataStatus, setMetadataStatus] = useState<'idle' | 'saving' | 'error'>(
     'idle',
   )
+  const viewerSlides = useMemo(
+    () =>
+      images.map((item) => ({
+        alt: item.title,
+        height: item.height,
+        src: item.displayUrl,
+        width: item.width,
+      })),
+    [images],
+  )
 
   if (!image) {
     return <PlaceholderPage title="Image not found" user={user} />
   }
 
-  const previousImage = currentIndex > 0 ? images[currentIndex - 1] : null
-  const nextImage =
-    currentIndex < images.length - 1 ? images[currentIndex + 1] : null
   const isMetadataDraftCurrent = metadataDraftImageId === image.id
   const metadataFormTitle = isMetadataDraftCurrent ? metadataTitle : image.title
   const metadataFormDescription = isMetadataDraftCurrent
@@ -73,13 +80,9 @@ export function ImageDetailPage({
     ? metadataTagsText
     : image.tags.join(', ')
 
-  const goToPreviousImage = () => {
-    if (!previousImage) return
-    navigate(`/images/${previousImage.id}`)
-  }
-
-  const goToNextImage = () => {
-    if (!nextImage) return
+  const changeViewerIndex = (nextIndex: number) => {
+    const nextImage = images[nextIndex]
+    if (!nextImage || nextImage.id === image.id) return
     navigate(`/images/${nextImage.id}`)
   }
 
@@ -194,14 +197,10 @@ export function ImageDetailPage({
       <ContentNotice />
       <article>
         <TouchImageViewer
-          alt={image.title}
-          canGoNext={Boolean(nextImage)}
-          canGoPrevious={Boolean(previousImage)}
+          currentIndex={currentIndex}
           key={image.id}
-          onNext={goToNextImage}
-          onPrevious={goToPreviousImage}
-          onSwipeDown={goBackToList}
-          src={image.displayUrl}
+          onIndexChange={changeViewerIndex}
+          slides={viewerSlides}
         />
         <div className="detail-copy">
           {user ? (

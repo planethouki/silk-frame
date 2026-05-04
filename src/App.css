@@ -25,7 +25,6 @@
 .admin-actions a,
 .admin-panel button,
 .rating-control button,
-.viewer-nav-button,
 .icon-action {
   appearance: none;
   border: 0;
@@ -302,6 +301,7 @@ h2 {
   align-items: center;
   background: var(--soft);
   display: flex;
+  height: 76svh;
   justify-content: center;
   max-height: 76svh;
   min-height: min(76svh, 520px);
@@ -311,59 +311,33 @@ h2 {
   user-select: none;
 }
 
-.detail-image {
-  max-height: 76svh;
-  object-fit: contain;
-  transform-origin: center;
-  user-select: none;
-  width: 100%;
+.inline-lightbox-root {
+  --yarl__color_button: color-mix(in srgb, var(--ink) 78%, transparent);
+  --yarl__color_button_active: var(--ink);
+  --yarl__color_button_disabled: transparent;
+  --yarl__container_background_color: var(--soft);
+  --yarl__navigation_button_padding: 18px 12px;
+  --yarl__slide_icon_loading_color: var(--muted);
+  --yarl__slide_icon_error_color: #a13d2d;
 }
 
-.viewer-actions {
-  inset: 0;
-  pointer-events: none;
-  position: absolute;
+.inline-lightbox-root .yarl__button {
+  filter: none;
 }
 
-.viewer-nav-button {
-  align-items: center;
+.inline-lightbox-root .yarl__navigation_next,
+.inline-lightbox-root .yarl__navigation_prev {
   background: color-mix(in srgb, var(--surface) 82%, transparent);
   border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
   border-radius: 999px;
-  color: var(--ink);
-  display: inline-flex;
-  height: 42px;
-  justify-content: center;
-  pointer-events: auto;
-  position: absolute;
-  top: 50%;
-  translate: 0 -50%;
-  width: 42px;
+  margin: 0 12px;
 }
 
-.viewer-nav-button:first-child {
-  left: 12px;
-}
-
-.viewer-nav-button:last-child {
-  right: 12px;
-}
-
-.viewer-nav-button:hover,
-.viewer-nav-button:focus-visible {
+.inline-lightbox-root .yarl__navigation_next:hover,
+.inline-lightbox-root .yarl__navigation_next:focus-visible,
+.inline-lightbox-root .yarl__navigation_prev:hover,
+.inline-lightbox-root .yarl__navigation_prev:focus-visible {
   background: var(--surface);
-  outline: none;
-}
-
-.viewer-nav-button:disabled {
-  cursor: default;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.viewer-nav-button svg {
-  height: 22px;
-  width: 22px;
 }
 
 .detail-copy {
@@ -1129,6 +1103,7 @@ h2 {
   }
 
   .touch-viewer {
+    height: 72svh;
     max-height: 72svh;
     min-height: 62svh;
   }
