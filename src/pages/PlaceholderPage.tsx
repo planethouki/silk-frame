@@ -8,10 +8,14 @@ export function PlaceholderPage({
   user: User | null
 }) {
   return (
-    <main className="placeholder-page">
-      <p className="eyebrow">{user ? 'Admin route' : 'Protected route'}</p>
+    <main className="grid max-w-[760px] gap-6 max-[760px]:block">
+      <p className="mb-2 mt-0 text-[13px] font-[650] uppercase text-[var(--muted)]">
+        {user ? 'Admin route' : 'Protected route'}
+      </p>
       <h1>{title}</h1>
-      <p>This route is reserved for the next implementation phase.</p>
+      <p className="mb-0 mt-3.5 text-[var(--text)]">
+        This route is reserved for the next implementation phase.
+      </p>
     </main>
   )
 }

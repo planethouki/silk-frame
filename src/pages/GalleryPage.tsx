@@ -64,7 +64,7 @@ export function GalleryPage({
                 ? 'Close thumbnail settings'
                 : 'Edit thumbnail settings'
             }
-            className="icon-action"
+            className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] p-0 text-[var(--ink)] hover:bg-[var(--soft)] focus-visible:bg-[var(--soft)] focus-visible:outline-none disabled:cursor-wait disabled:opacity-[0.62] [&_svg]:h-[17px] [&_svg]:w-[17px]"
             onClick={() => setIsEditingThumbSettings((current) => !current)}
             type="button"
           >
@@ -74,12 +74,16 @@ export function GalleryPage({
       />
       <ContentNotice />
       {isEditingThumbSettings ? (
-        <section className="thumb-settings-panel" aria-label="Thumbnail settings">
-          <fieldset>
-            <legend>Fit</legend>
-            <div className="segmented-control">
+        <section
+          className="mb-6 flex flex-wrap items-end gap-4 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3.5"
+          aria-label="Thumbnail settings"
+        >
+          <fieldset className="grid min-w-0 gap-[7px] border-0 p-0 m-0">
+            <legend className="p-0 text-[13px] text-[var(--muted)]">Fit</legend>
+            <div className="flex overflow-hidden rounded-full border border-[var(--border)] bg-[var(--paper)]">
               <button
                 aria-pressed={thumbSettings.fit === 'cover'}
+                className="min-h-[34px] border-0 bg-transparent px-3 font-[inherit] text-[var(--muted)] aria-pressed:bg-[var(--ink)] aria-pressed:text-[var(--surface)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--ink)]"
                 onClick={() =>
                   updateThumbSettings({ ...thumbSettings, fit: 'cover' })
                 }
@@ -89,6 +93,7 @@ export function GalleryPage({
               </button>
               <button
                 aria-pressed={thumbSettings.fit === 'contain'}
+                className="min-h-[34px] border-0 border-l border-[var(--border)] bg-transparent px-3 font-[inherit] text-[var(--muted)] aria-pressed:bg-[var(--ink)] aria-pressed:text-[var(--surface)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--ink)]"
                 onClick={() =>
                   updateThumbSettings({ ...thumbSettings, fit: 'contain' })
                 }
@@ -98,11 +103,12 @@ export function GalleryPage({
               </button>
             </div>
           </fieldset>
-          <fieldset>
-            <legend>Frame</legend>
-            <div className="segmented-control">
+          <fieldset className="grid min-w-0 gap-[7px] border-0 p-0 m-0">
+            <legend className="p-0 text-[13px] text-[var(--muted)]">Frame</legend>
+            <div className="flex overflow-hidden rounded-full border border-[var(--border)] bg-[var(--paper)]">
               <button
                 aria-pressed={thumbSettings.frame === 'square'}
+                className="min-h-[34px] border-0 bg-transparent px-3 font-[inherit] text-[var(--muted)] aria-pressed:bg-[var(--ink)] aria-pressed:text-[var(--surface)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--ink)]"
                 onClick={() =>
                   updateThumbSettings({ ...thumbSettings, frame: 'square' })
                 }
@@ -112,6 +118,7 @@ export function GalleryPage({
               </button>
               <button
                 aria-pressed={thumbSettings.frame === 'portrait'}
+                className="min-h-[34px] border-0 border-l border-[var(--border)] bg-transparent px-3 font-[inherit] text-[var(--muted)] aria-pressed:bg-[var(--ink)] aria-pressed:text-[var(--surface)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--ink)]"
                 onClick={() =>
                   updateThumbSettings({ ...thumbSettings, frame: 'portrait' })
                 }
@@ -121,11 +128,12 @@ export function GalleryPage({
               </button>
             </div>
           </fieldset>
-          <fieldset>
-            <legend>Crop Y</legend>
-            <div className="segmented-control">
+          <fieldset className="grid min-w-0 gap-[7px] border-0 p-0 m-0">
+            <legend className="p-0 text-[13px] text-[var(--muted)]">Crop Y</legend>
+            <div className="flex overflow-hidden rounded-full border border-[var(--border)] bg-[var(--paper)]">
               <button
                 aria-pressed={thumbSettings.verticalAlign === 'top'}
+                className="min-h-[34px] border-0 bg-transparent px-3 font-[inherit] text-[var(--muted)] aria-pressed:bg-[var(--ink)] aria-pressed:text-[var(--surface)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--ink)]"
                 onClick={() =>
                   updateThumbSettings({ ...thumbSettings, verticalAlign: 'top' })
                 }
@@ -135,6 +143,7 @@ export function GalleryPage({
               </button>
               <button
                 aria-pressed={thumbSettings.verticalAlign === 'center'}
+                className="min-h-[34px] border-0 border-l border-[var(--border)] bg-transparent px-3 font-[inherit] text-[var(--muted)] aria-pressed:bg-[var(--ink)] aria-pressed:text-[var(--surface)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--ink)]"
                 onClick={() =>
                   updateThumbSettings({
                     ...thumbSettings,
@@ -147,6 +156,7 @@ export function GalleryPage({
               </button>
               <button
                 aria-pressed={thumbSettings.verticalAlign === 'bottom'}
+                className="min-h-[34px] border-0 border-l border-[var(--border)] bg-transparent px-3 font-[inherit] text-[var(--muted)] aria-pressed:bg-[var(--ink)] aria-pressed:text-[var(--surface)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--ink)]"
                 onClick={() =>
                   updateThumbSettings({
                     ...thumbSettings,

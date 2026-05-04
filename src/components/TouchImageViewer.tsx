@@ -19,7 +19,11 @@ export function TouchImageViewer({
   slides: TouchImageViewerSlide[]
 }) {
   return (
-    <div aria-label="Image viewer" className="touch-viewer" role="group">
+    <div
+      aria-label="Image viewer"
+      className="relative flex h-[76svh] max-h-[76svh] min-h-[min(76svh,520px)] touch-none select-none items-center justify-center overflow-hidden bg-[var(--soft)] max-[760px]:h-[72svh] max-[760px]:max-h-[72svh] max-[760px]:min-h-[62svh]"
+      role="group"
+    >
       <Lightbox
         animation={{ zoom: 300 }}
         carousel={{

@@ -15,14 +15,16 @@ export function PageHeading({
   actions?: ReactNode
 }) {
   return (
-    <section className="gallery-heading">
+    <section className="mb-6 flex items-end justify-between max-[760px]:flex-col max-[760px]:items-start max-[760px]:gap-3.5">
       <div>
-        <p className="eyebrow">{eyebrow}</p>
+        <p className="mb-2 mt-0 text-[13px] font-[650] uppercase text-[var(--muted)]">
+          {eyebrow}
+        </p>
         <h1>{title}</h1>
       </div>
-      <div className="heading-actions">
+      <div className="flex items-center gap-2.5">
         {loadState ? (
-          <p className="status-pill">
+          <p className="m-0 whitespace-nowrap rounded-full border border-[var(--border)] bg-[var(--soft)] px-3 py-[7px] text-sm text-[var(--muted)]">
             {loadState === 'loading'
               ? 'Loading'
               : loadState === 'offline'

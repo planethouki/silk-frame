@@ -18,6 +18,18 @@ import { PlaceholderPage } from './PlaceholderPage'
 import type { GalleryImage, ImageRating } from '../types'
 import type { User } from 'firebase/auth'
 
+const iconActionClass =
+  'inline-flex h-[30px] w-[30px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] p-0 text-[var(--ink)] hover:bg-[var(--soft)] focus-visible:bg-[var(--soft)] focus-visible:outline-none disabled:cursor-wait disabled:opacity-[0.62] [&_svg]:h-[17px] [&_svg]:w-[17px]'
+const iconActionDangerClass = `${iconActionClass} text-[#a13d2d] hover:border-[#e7b7aa] hover:bg-[#f9e5df] focus-visible:border-[#e7b7aa] focus-visible:bg-[#f9e5df]`
+const primaryActionClass =
+  'justify-self-start rounded-full border-0 bg-[var(--ink)] px-[18px] py-2.5 font-[inherit] text-[var(--surface)] disabled:cursor-wait disabled:opacity-[0.62]'
+const secondaryActionClass =
+  'justify-self-start rounded-full border border-[var(--border)] bg-[var(--soft)] px-3.5 py-2 font-[inherit] text-[var(--ink)] disabled:cursor-wait disabled:opacity-[0.62]'
+const dangerActionClass =
+  'rounded-full border-0 bg-[#a13d2d] px-4 py-2.5 font-[inherit] text-[var(--surface)] disabled:cursor-wait disabled:opacity-[0.62]'
+const formInputClass =
+  'w-full min-w-0 rounded-lg border border-[var(--border)] bg-[var(--paper)] px-3 py-2.5 font-[inherit] text-[var(--ink)] focus:border-[var(--ink)] focus:outline-none disabled:cursor-wait disabled:opacity-70'
+
 export function ImageDetailPage({
   images,
   user,
@@ -190,28 +202,32 @@ export function ImageDetailPage({
   }
 
   return (
-    <main className="detail-layout">
-      <button className="back-button" type="button" onClick={goBackToList}>
+    <main className="max-w-[980px] max-[760px]:px-0">
+      <button
+        className="mb-[18px] rounded-full bg-[var(--soft)] px-[13px] py-2 text-[var(--ink)] max-[760px]:mx-3"
+        type="button"
+        onClick={goBackToList}
+      >
         Back
       </button>
       <ContentNotice />
-      <article>
+      <article className="grid grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)] gap-7 max-[760px]:block">
         <TouchImageViewer
           currentIndex={currentIndex}
           key={image.id}
           onIndexChange={changeViewerIndex}
           slides={viewerSlides}
         />
-        <div className="detail-copy">
+        <div className="min-w-0 self-end pb-2.5 max-[760px]:mx-3 max-[760px]:pt-[22px]">
           {user ? (
             <>
-              <div className="detail-tool-row">
+              <div className="mb-3 flex gap-2">
                 <button
                   aria-expanded={isInfoOpen}
                   aria-label={
                     isInfoOpen ? 'Hide image information' : 'Show image information'
                   }
-                  className="icon-action"
+                  className={iconActionClass}
                   onClick={() => setIsInfoOpen((current) => !current)}
                   type="button"
                 >
@@ -222,7 +238,7 @@ export function ImageDetailPage({
                 aria-label={
                   isEditingMetadata ? 'Close metadata editor' : 'Edit metadata'
                 }
-                className="icon-action"
+                className={iconActionClass}
                 onClick={() =>
                   setIsEditingMetadata((current) => {
                     const next = !current
@@ -245,7 +261,7 @@ export function ImageDetailPage({
                 aria-label={
                   isConfirmingDelete ? 'Close delete confirmation' : 'Delete image'
                 }
-                className="icon-action icon-action-danger"
+                className={iconActionDangerClass}
                 disabled={deleteStatus === 'deleting'}
                 onClick={() => {
                   setDeleteStatus('idle')
@@ -257,32 +273,43 @@ export function ImageDetailPage({
               </button>
               </div>
               {isInfoOpen ? (
-                <div className="detail-info-panel">
-                  <dl>
-                    <div>
-                      <dt>Title</dt>
-                      <dd>{image.title}</dd>
+                <div className="mb-[18px] rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3.5">
+                  <dl className="m-0 grid min-w-0 gap-3">
+                    <div className="grid min-w-0 gap-[3px]">
+                      <dt className="text-xs uppercase text-[var(--muted)]">Title</dt>
+                      <dd className="m-0 break-words text-[var(--ink)] [overflow-wrap:anywhere]">
+                        {image.title}
+                      </dd>
                     </div>
-                    <div>
-                      <dt>Description</dt>
-                      <dd>{image.description || '-'}</dd>
+                    <div className="grid min-w-0 gap-[3px]">
+                      <dt className="text-xs uppercase text-[var(--muted)]">
+                        Description
+                      </dt>
+                      <dd className="m-0 break-words text-[var(--ink)] [overflow-wrap:anywhere]">
+                        {image.description || '-'}
+                      </dd>
                     </div>
-                    <div>
-                      <dt>Date</dt>
-                      <dd>{image.sortAt.toLocaleDateString()}</dd>
+                    <div className="grid min-w-0 gap-[3px]">
+                      <dt className="text-xs uppercase text-[var(--muted)]">Date</dt>
+                      <dd className="m-0 break-words text-[var(--ink)] [overflow-wrap:anywhere]">
+                        {image.sortAt.toLocaleDateString()}
+                      </dd>
                     </div>
                   </dl>
                 </div>
               ) : null}
               {isConfirmingDelete ? (
-                <div className="delete-confirm-panel" role="alertdialog">
-                  <p>
+                <div
+                  className="mb-[18px] grid gap-3 rounded-lg border border-[#e7b7aa] bg-[#fff1ed] p-4 text-[var(--ink)]"
+                  role="alertdialog"
+                >
+                  <p className="m-0">
                     Delete this image from the gallery? Public display and thumb
                     files in S3 will also be deleted.
                   </p>
-                  <div>
+                  <div className="flex flex-wrap gap-2">
                     <button
-                      className="danger-action"
+                      className={dangerActionClass}
                       disabled={deleteStatus === 'deleting'}
                       onClick={confirmDeleteImage}
                       type="button"
@@ -290,7 +317,7 @@ export function ImageDetailPage({
                       {deleteStatus === 'deleting' ? 'Deleting' : 'Delete'}
                     </button>
                     <button
-                      className="secondary-action"
+                      className={secondaryActionClass}
                       disabled={deleteStatus === 'deleting'}
                       onClick={() => {
                         setDeleteStatus('idle')
@@ -302,17 +329,23 @@ export function ImageDetailPage({
                     </button>
                   </div>
                   {deleteStatus === 'error' ? (
-                    <p role="alert">Could not delete the image.</p>
+                    <p className="m-0 text-[#a13d2d]" role="alert">
+                      Could not delete the image.
+                    </p>
                   ) : null}
                 </div>
               ) : null}
             </>
           ) : null}
           {user && isEditingMetadata ? (
-            <form className="metadata-editor" onSubmit={saveMetadata}>
-              <label>
-                <span>Title</span>
+            <form
+              className="mb-[18px] grid min-w-0 gap-3 rounded-lg border border-[#ead3a6] bg-[#fff7e8] p-3"
+              onSubmit={saveMetadata}
+            >
+              <label className="grid min-w-0 gap-1.5 text-[var(--ink)]">
+                <span className="text-[13px] text-[var(--muted)]">Title</span>
                 <input
+                  className={formInputClass}
                   disabled={metadataStatus === 'saving'}
                   onChange={(event) => {
                     setMetadataDraftImageId(image.id)
@@ -323,9 +356,10 @@ export function ImageDetailPage({
                   value={metadataFormTitle}
                 />
               </label>
-              <label>
-                <span>Description</span>
+              <label className="grid min-w-0 gap-1.5 text-[var(--ink)]">
+                <span className="text-[13px] text-[var(--muted)]">Description</span>
                 <textarea
+                  className={`${formInputClass} resize-y`}
                   disabled={metadataStatus === 'saving'}
                   onChange={(event) => {
                     setMetadataDraftImageId(image.id)
@@ -335,9 +369,10 @@ export function ImageDetailPage({
                   value={metadataFormDescription}
                 />
               </label>
-              <label>
-                <span>Tags</span>
+              <label className="grid min-w-0 gap-1.5 text-[var(--ink)]">
+                <span className="text-[13px] text-[var(--muted)]">Tags</span>
                 <input
+                  className={formInputClass}
                   disabled={metadataStatus === 'saving'}
                   onChange={(event) => {
                     setMetadataDraftImageId(image.id)
@@ -349,12 +384,12 @@ export function ImageDetailPage({
                 />
               </label>
               {metadataStatus === 'error' ? (
-                <p role="alert">
+                <p className="m-0 text-[#a13d2d]" role="alert">
                   Could not update the image information. Title is required.
                 </p>
               ) : null}
               <button
-                className="primary-action"
+                className={primaryActionClass}
                 disabled={metadataStatus === 'saving'}
                 type="submit"
               >
@@ -362,26 +397,41 @@ export function ImageDetailPage({
               </button>
             </form>
           ) : null}
-          <div className="tag-row">
+          <div className="mt-6 flex flex-wrap gap-2">
             {image.tags.map((tag) => (
-              <Link key={tag} to={`/tags/${slugify(tag)}`}>
+              <Link
+                className="rounded-full border border-[var(--border)] bg-[var(--soft)] px-[11px] py-[7px] text-[var(--ink)] no-underline"
+                key={tag}
+                to={`/tags/${slugify(tag)}`}
+              >
                 #{tag}
               </Link>
             ))}
           </div>
           {user ? (
             <>
-              <div className="rating-panel" aria-label="Admin ratings">
-                <div className="rating-summary">
-                  <span aria-label="Heart rating">
+              <div
+                className="mt-[18px] grid items-start gap-2.5 rounded-lg border-0 bg-transparent p-0"
+                aria-label="Admin ratings"
+              >
+                <div className="inline-flex items-center gap-2 text-[var(--muted)]">
+                  <span
+                    className="min-w-[42px] rounded-full border border-[var(--border)] bg-[var(--soft)] px-2 py-[5px] text-center text-[13px]"
+                    aria-label="Heart rating"
+                  >
                     ♥ {image.heartRating ?? '-'}
                   </span>
-                  <span aria-label="Star rating">★ {image.starRating ?? '-'}</span>
+                  <span
+                    className="min-w-[42px] rounded-full border border-[var(--border)] bg-[var(--soft)] px-2 py-[5px] text-center text-[13px]"
+                    aria-label="Star rating"
+                  >
+                    ★ {image.starRating ?? '-'}
+                  </span>
                   <button
                     aria-label={
                       isEditingRatings ? 'Close rating editor' : 'Edit ratings'
                     }
-                    className="icon-action"
+                    className={iconActionClass}
                     onClick={() => setIsEditingRatings((current) => !current)}
                     type="button"
                   >
@@ -389,7 +439,7 @@ export function ImageDetailPage({
                   </button>
                 </div>
                 {isEditingRatings ? (
-                  <div className="rating-editor">
+                  <div className="grid gap-3 rounded-lg border border-[#ead3a6] bg-[#fff7e8] p-3">
                     <RatingControl
                       activeSymbol="♥"
                       disabled={ratingStatus === 'saving-heart'}
@@ -407,14 +457,16 @@ export function ImageDetailPage({
                       value={image.starRating}
                     />
                     {ratingStatus === 'error' ? (
-                      <p role="alert">Could not update the rating.</p>
+                      <p className="m-0 text-[#a13d2d]" role="alert">
+                        Could not update the rating.
+                      </p>
                     ) : null}
                   </div>
                 ) : null}
               </div>
-              <div className="high-res-panel">
+              <div className="mt-6 flex flex-wrap items-center gap-2.5 rounded-lg border border-[#bfdacf] bg-[#eef6f2] p-3.5">
                 <button
-                  className="primary-action"
+                  className={primaryActionClass}
                   type="button"
                   onClick={requestHighResolutionImage}
                   disabled={highResState === 'loading'}
@@ -423,14 +475,21 @@ export function ImageDetailPage({
                 </button>
                 {highResState === 'ready' ? (
                   <>
-                    <a href={highResUrl} target="_blank" rel="noreferrer">
+                    <a
+                      className="text-[var(--ink)]"
+                      href={highResUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       Open original
                     </a>
-                    <small>Signed URL expires at {highResExpiresText}</small>
+                    <small className="text-[var(--muted)]">
+                      Signed URL expires at {highResExpiresText}
+                    </small>
                   </>
                 ) : null}
                 {highResState === 'error' ? (
-                  <p role="alert">
+                  <p className="m-0 basis-full text-[#a13d2d]" role="alert">
                     Could not load the high-resolution image. Check your admin role
                     and Functions configuration.
                   </p>
@@ -441,8 +500,15 @@ export function ImageDetailPage({
         </div>
       </article>
       {highResUrl ? (
-        <section className="high-res-preview" aria-label="High-resolution preview">
-          <img src={highResUrl} alt={`${image.title} high resolution`} />
+        <section
+          className="mt-7 max-[760px]:mx-3"
+          aria-label="High-resolution preview"
+        >
+          <img
+            className="max-h-[88svh] w-full bg-[var(--soft)] object-contain"
+            src={highResUrl}
+            alt={`${image.title} high resolution`}
+          />
         </section>
       ) : null}
     </main>
