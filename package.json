@@ -17,7 +17,8 @@
     "react-dom": "^19.2.5",
     "react-router": "^7.14.2",
     "swr": "^2.4.1",
-    "tailwindcss": "^4.2.4"
+    "tailwindcss": "^4.2.4",
+    "yet-another-react-lightbox": "^3.32.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
